@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://cll81ls28ruxt" path="res://scene/player.gd" id="1_fvtld"]
 [ext_resource type="Texture2D" uid="uid://cc66l324ef2rg" path="res://resources/texture/W.png" id="1_hjaqi"]
 [ext_resource type="Texture2D" uid="uid://o3v4mmcdqpn" path="res://resources/texture/浮游炮.png" id="2_fvtld"]
+[ext_resource type="PackedScene" uid="uid://cejhgogt4yo0x" path="res://scene/bullet.tscn" id="3_33cqm"]
+[ext_resource type="PackedScene" uid="uid://cejhgogt4yo0x" path="res://scene/bullet.tscn" id="2_ct4mp"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ct4mp"]
 atlas = ExtResource("1_hjaqi")
@@ -381,6 +383,7 @@ radius = 6.0
 [node name="Player" type="CharacterBody2D" unique_id=1760143055]
 collision_layer = 2
 script = ExtResource("1_fvtld")
+bullet_scene = ExtResource("3_33cqm")
 
 [node name="BodySprite" type="AnimatedSprite2D" parent="." unique_id=994289652]
 sprite_frames = SubResource("SpriteFrames_8rkx0")
@@ -394,3 +397,5 @@ frame_progress = 0.5217074
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=33621799]
 shape = SubResource("CircleShape2D_acav1")
+
+[node name="ShootingTimer" type="Timer" parent="." unique_id=618403894]
