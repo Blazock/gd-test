@@ -3,10 +3,6 @@
 [ext_resource type="Texture2D" uid="uid://tpsy3pnxqh3s" path="res://resources/texture/瓦片.png" id="1_5kiuu"]
 [ext_resource type="Texture2D" uid="uid://d4lnfl8lpiqtm" path="res://resources/texture/动态瓦片.png" id="2_dbls1"]
 [ext_resource type="PackedScene" uid="uid://bn2lvaadfqhcb" path="res://scene/player.tscn" id="3_33cqm"]
-[ext_resource type="PackedScene" uid="uid://do4aleu5mq0dt" path="res://scene/pickup.tscn" id="4_qpk70"]
-[ext_resource type="Resource" uid="uid://by76mi6c843n2" path="res://resources/config/pickup_rapid.tres" id="5_ll5lq"]
-[ext_resource type="Resource" uid="uid://b2dwwal4dxk7q" path="res://resources/config/pickup_spiral.tres" id="6_17rxn"]
-[ext_resource type="Resource" uid="uid://byas3xcsy56og" path="res://resources/config/pickup_speed.tres" id="7_yq8tf"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_dbls1"]
 texture = ExtResource("1_5kiuu")
@@ -140,15 +136,3 @@ shape = SubResource("SegmentShape2D_xlg7c")
 
 [node name="Player" parent="." unique_id=1760143055 instance=ExtResource("3_33cqm")]
 position = Vector2(75, 112)
-
-[node name="Pickup" parent="." unique_id=1418523161 instance=ExtResource("4_qpk70")]
-position = Vector2(40, 72)
-config = ExtResource("5_ll5lq")
-
-[node name="Pickup2" parent="." unique_id=991134364 instance=ExtResource("4_qpk70")]
-position = Vector2(56, 160)
-config = ExtResource("6_17rxn")
-
-[node name="Pickup3" parent="." unique_id=1059226822 instance=ExtResource("4_qpk70")]
-position = Vector2(128, 104)
-config = ExtResource("7_yq8tf")

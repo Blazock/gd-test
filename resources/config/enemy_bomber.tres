@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyConfig" format=3 uid="uid://b4pu0iuim8ely"]
+
+[ext_resource type="SpriteFrames" uid="uid://ixrif6x6c7ct" path="res://resources/animation/enemy_bomber.tres" id="1_dmrur"]
+[ext_resource type="Script" uid="uid://bqd41w4lt2mnb" path="res://resources/config/pickup_config.gd" id="2_dmrur"]
+[ext_resource type="Resource" uid="uid://byas3xcsy56og" path="res://resources/config/pickup_speed.tres" id="3_qmoxg"]
+[ext_resource type="Resource" uid="uid://by76mi6c843n2" path="res://resources/config/pickup_rapid.tres" id="4_4kq6o"]
+[ext_resource type="Script" uid="uid://bdn7tl2c3so7r" path="res://resources/config/enemy_config.gd" id="5_7pxth"]
+[ext_resource type="Resource" uid="uid://b2dwwal4dxk7q" path="res://resources/config/pickup_spiral.tres" id="5_qmoxg"]
+
+[resource]
+script = ExtResource("5_7pxth")
+enemy_type = 3
+display_name = "self-destructing enemy"
+max_health = 2
+move_speed = 15.0
+collision_radius = 8.0
+enemy_frames = ExtResource("1_dmrur")
+explosion_damage = 2
+explosion_radius = 30.0
+pickup_drop_chance = 0.8
+metadata/_custom_type_script = "uid://bdn7tl2c3so7r"
