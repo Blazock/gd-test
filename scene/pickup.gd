@@ -1,5 +1,5 @@
-extends Area2D
 class_name Pickup
+extends Area2D
 
 const BLINK_ENABLED_SHADER_PARAMETER := &"blink_enabled"
 
@@ -7,10 +7,10 @@ const BLINK_ENABLED_SHADER_PARAMETER := &"blink_enabled"
 # Seconds before lifetime ends to start the blink warning.
 @export_range(0.0, 10.0, 0.1, "or_greater") var blink_before_expire: float = 1.2
 
+var is_expiring: bool = false
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var lifetime_timer: Timer = $LifetimeTimer
-
-var is_expiring: bool = false
 
 
 func _ready() -> void:

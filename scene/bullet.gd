@@ -1,5 +1,5 @@
-extends Area2D
 class_name Bullet
+extends Area2D
 
 # World collision layer mask: used to detect walls/obstacles via raycast.
 const WORLD_COLLISION_MASK := 1
@@ -8,21 +8,13 @@ const WORLD_COLLISION_MASK := 1
 @export var max_lifetime: float = 2.0
 
 var direction: Vector2 = Vector2.RIGHT
-var _playable_bounds: Rect2
-
 var remaining_lifetime: float = 0.0
+var _playable_bounds: Rect2
 
 
 func _ready() -> void:
 	remaining_lifetime = max_lifetime
 	area_entered.connect(_on_area_entered)
-
-
-func setup(direction: Vector2, spawn_position: Vector2, bounds: Rect2) -> void:
-	self.direction = direction.normalized()
-	rotation = self.direction.angle()
-	_playable_bounds = bounds
-	global_position = _clamp_to_bounds(spawn_position, bounds)
 
 
 func _physics_process(delta: float) -> void:
@@ -46,6 +38,13 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
+func setup(direction: Vector2, spawn_position: Vector2, bounds: Rect2) -> void:
+	self.direction = direction.normalized()
+	rotation = self.direction.angle()
+	_playable_bounds = bounds
+	global_position = _clamp_to_bounds(spawn_position, bounds)
+
+
 # Raycasts ahead to see if the bullet would collide with a world obstacle.
 # Prevents bullet from clipping through walls at high speed.
 func _will_hit_world(from_position: Vector2, to_position: Vector2) -> bool:
@@ -53,7 +52,9 @@ func _will_hit_world(from_position: Vector2, to_position: Vector2) -> bool:
 	if space_state == null:
 		return false
 	var query := PhysicsRayQueryParameters2D.create(
-		from_position, to_position, WORLD_COLLISION_MASK
+		from_position,
+		to_position,
+		WORLD_COLLISION_MASK,
 	)
 	query.collide_with_bodies = true
 	query.collide_with_areas = false
@@ -67,7 +68,7 @@ func _clamp_to_bounds(pos: Vector2, bounds: Rect2) -> Vector2:
 	var bottom_right := bounds.position + bounds.size
 	return Vector2(
 		clampf(pos.x, top_left.x, bottom_right.x),
-		clampf(pos.y, top_left.y, bottom_right.y)
+		clampf(pos.y, top_left.y, bottom_right.y),
 	)
 
 

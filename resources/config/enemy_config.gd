@@ -1,4 +1,5 @@
 extends Resource
+
 class_name EnemyConfig
 
 enum EnemyType {

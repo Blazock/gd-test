@@ -1,21 +1,18 @@
-extends CharacterBody2D
 class_name Player
+extends CharacterBody2D
 
 const NORMAL_ANIMATION_PREFIX := &"normal"
 const ARMED_ANIMATION_PREFIX := &"armed"
-@onready var body_sprite: AnimatedSprite2D = $BodySprite
-@onready var armed_effect_sprite: AnimatedSprite2D = $ArmedEffectSprite
-@onready var shooting_timer: Timer = $ShootingTimer
-
 const DEFAULT_MOVE_SPEED_MULTIPLER := 1.0
 const DEFAULT_FIRE_RATE_MULTIPLER := 1.0
 const SPIRAL_PHASE_STEP := PI / 12
 
+@export var move_speed: float = 120.0
+@export var bullet_scene: PackedScene
+@export var bullet_spawn_distance: float = 18.0
+
 var facing_suffix: StringName = &"right"
 var last_move_direction: Vector2 = Vector2.RIGHT
-var _mouse_held: bool = false
-var _mouse_direction: Vector2 = Vector2.RIGHT
-
 var current_move_speed_multiplier: float = DEFAULT_MOVE_SPEED_MULTIPLER
 var rapid_fire_rate_multiplier: float = DEFAULT_FIRE_RATE_MULTIPLER
 var form_fire_rate_multiplier: float = DEFAULT_FIRE_RATE_MULTIPLER
@@ -26,10 +23,12 @@ var rapid_buff_time_left: float = 0.0
 var form_buff_time_left: float = 0.0
 var spiral_phase: float = 0.0
 var fire_interval: float = 0.18
+var _mouse_held: bool = false
+var _mouse_direction: Vector2 = Vector2.RIGHT
 
-@export var move_speed: float = 120.0
-@export var bullet_scene: PackedScene
-@export var bullet_spawn_distance: float = 18.0
+@onready var body_sprite: AnimatedSprite2D = $BodySprite
+@onready var armed_effect_sprite: AnimatedSprite2D = $ArmedEffectSprite
+@onready var shooting_timer: Timer = $ShootingTimer
 
 
 func _ready() -> void:
@@ -37,14 +36,6 @@ func _ready() -> void:
 	shooting_timer.wait_time = _get_effective_fire_interval()
 	_update_animation()
 	_update_armed_effect()
-
-
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("shoot") and event is InputEventMouseButton:
-		_mouse_held = true
-		_mouse_direction = (get_global_mouse_position() - global_position).normalized()
-	elif event.is_action_released("shoot") and event is InputEventMouseButton:
-		_mouse_held = false
 
 
 func _physics_process(delta: float) -> void:
@@ -74,13 +65,64 @@ func _physics_process(delta: float) -> void:
 		_try_shoot(dir.normalized())
 
 
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("shoot") and event is InputEventMouseButton:
+		_mouse_held = true
+		_mouse_direction = (get_global_mouse_position() - global_position).normalized()
+	elif event.is_action_released("shoot") and event is InputEventMouseButton:
+		_mouse_held = false
+
+
+func apply_pickup(config: PickupConfig) -> bool:
+	if config == null:
+		return false
+
+	var applied := false
+	var should_refresh_shooting_timer := false
+	var buff_duration := maxf(config.duration, 0.0)
+	var has_form_override := (
+		config.player_form_mode != PickupConfig.PlayerFormMode.NORMAL
+		or config.shot_pattern != PickupConfig.ShotPattern.NORMAL
+	)
+	var has_fire_rate_override := not is_equal_approx(
+		config.fire_rate_multiplier,
+		DEFAULT_FIRE_RATE_MULTIPLER,
+	)
+
+	if not is_equal_approx(config.move_speed_multiplier, DEFAULT_MOVE_SPEED_MULTIPLER):
+		current_move_speed_multiplier = config.move_speed_multiplier
+		speed_buff_time_left = buff_duration
+		applied = true
+
+	if has_fire_rate_override and not has_form_override:
+		rapid_fire_rate_multiplier = config.fire_rate_multiplier
+		rapid_buff_time_left = buff_duration
+		should_refresh_shooting_timer = true
+		applied = true
+
+	if has_form_override:
+		current_form_mode = config.player_form_mode
+		current_shot_pattern = config.shot_pattern
+		form_fire_rate_multiplier = (
+			config.fire_rate_multiplier if has_fire_rate_override else DEFAULT_FIRE_RATE_MULTIPLER
+		)
+		form_buff_time_left = buff_duration
+		spiral_phase = 0.0
+		should_refresh_shooting_timer = true
+		applied = true
+
+	if should_refresh_shooting_timer:
+		_refresh_shooting_timer_wait_time()
+	return applied
+
+
 func _update_animation() -> void:
 	var animation_name := StringName("%s_%s" % [_get_animation_prefix(), facing_suffix])
 
 	# Fall back to normal prefix if the current form's animation doesn't exist.
 	if not body_sprite.sprite_frames.has_animation(animation_name):
 		var fallback_animation_name := StringName(
-			"%s_%s" % [NORMAL_ANIMATION_PREFIX, facing_suffix]
+			"%s_%s" % [NORMAL_ANIMATION_PREFIX, facing_suffix],
 		)
 		if not body_sprite.sprite_frames.has_animation(fallback_animation_name):
 			push_warning("Missing player animation: %s" % animation_name)
@@ -114,48 +156,6 @@ func _try_shoot(shoot_input: Vector2) -> void:
 		shooting_timer.start(_get_effective_fire_interval())
 
 
-func apply_pickup(config: PickupConfig) -> bool:
-	if config == null:
-		return false
-
-	var applied := false
-	var should_refresh_shooting_timer := false
-	var buff_duration := maxf(config.duration, 0.0)
-	var has_form_override := (
-		config.player_form_mode != PickupConfig.PlayerFormMode.NORMAL
-		or config.shot_pattern != PickupConfig.ShotPattern.NORMAL
-	)
-	var has_fire_rate_override := not is_equal_approx(
-		config.fire_rate_multiplier, DEFAULT_FIRE_RATE_MULTIPLER
-	)
-
-	if not is_equal_approx(config.move_speed_multiplier, DEFAULT_MOVE_SPEED_MULTIPLER):
-		current_move_speed_multiplier = config.move_speed_multiplier
-		speed_buff_time_left = buff_duration
-		applied = true
-
-	if has_fire_rate_override and not has_form_override:
-		rapid_fire_rate_multiplier = config.fire_rate_multiplier
-		rapid_buff_time_left = buff_duration
-		should_refresh_shooting_timer = true
-		applied = true
-
-	if has_form_override:
-		current_form_mode = config.player_form_mode
-		current_shot_pattern = config.shot_pattern
-		form_fire_rate_multiplier = (
-			config.fire_rate_multiplier if has_fire_rate_override else DEFAULT_FIRE_RATE_MULTIPLER
-		)
-		form_buff_time_left = buff_duration
-		spiral_phase = 0.0
-		should_refresh_shooting_timer = true
-		applied = true
-
-	if should_refresh_shooting_timer:
-		_refresh_shooting_timer_wait_time()
-	return applied
-
-
 # Normal pattern fires one bullet; spiral fires forward + backward with rotating phase.
 func _fire_bullets(base_direction: Vector2) -> bool:
 	if current_shot_pattern == PickupConfig.ShotPattern.SPIRAL:
@@ -182,7 +182,7 @@ func _spawn_bullet(shoot_direction: Vector2) -> bool:
 	bullet.setup(
 		shoot_direction,
 		global_position + shoot_direction * bullet_spawn_distance,
-		_get_playable_bounds(spawn_parent)
+		_get_playable_bounds(spawn_parent),
 	)
 	return true
 
